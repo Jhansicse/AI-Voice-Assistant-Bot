@@ -1,0 +1,70 @@
+import speech_recognition as sr
+import pyttsx3
+import datetime
+import wikipedia
+import webbrowser
+import os
+
+# Initialize the engine
+engine = pyttsx3.init()
+engine.setProperty('rate', 150)  # Speed of speech
+
+def speak(text):
+    engine.say(text)
+    engine.runAndWait()
+
+def greet_user():
+    hour = int(datetime.datetime.now().hour)
+    if hour < 12:
+        speak("Good Morning!")
+    elif 12 <= hour < 18:
+        speak("Good Afternoon!")
+    else:
+        speak("Good Evening!")
+    speak("I am your voice assistant. How can I help you today?")
+
+def take_command():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        recognizer.pause_threshold = 1
+        audio = recognizer.listen(source)
+    try:
+        print("Recognizing...")
+        command = recognizer.recognize_google(audio, language='en-in')
+        print(f"You said: {command}\n")
+    except Exception:
+        speak("Sorry, I didn't catch that. Could you repeat please?")
+        return "None"
+    return command.lower()
+
+def run_assistant():
+    greet_user()
+    while True:
+        query = take_command()
+        if 'wikipedia' in query:
+            speak('Searching Wikipedia...')
+            query = query.replace("wikipedia", "")
+            try:
+                result = wikipedia.summary(query, sentences=2)
+                speak("According to Wikipedia")
+                speak(result)
+            except:
+                speak("Sorry, I couldn't find anything.")
+        elif 'open youtube' in query:
+            webbrowser.open("https://www.youtube.com")
+        elif 'open google' in query:
+            webbrowser.open("https://www.google.com")
+        elif 'time' in query:
+            strTime = datetime.datetime.now().strftime("%H:%M:%S")
+            speak(f"The time is {strTime}")
+        elif 'open notepad' in query:
+            os.system("notepad.exe")
+        elif 'exit' in query or 'stop' in query:
+            speak("Goodbye!")
+            break
+        else:
+            speak("I am still learning. Can you try a different command?")
+
+# Start the assistant
+run_assistant()
